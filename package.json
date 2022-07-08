@@ -1,0 +1,28 @@
+{
+  "name": "rest-api",
+  "version": "1.0.0",
+  "description": "node.js restful api tutorial",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AverageMalchik/rest-node-academind.git"
+  },
+  "author": "muhammed jibran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AverageMalchik/rest-node-academind/issues"
+  },
+  "homepage": "https://github.com/AverageMalchik/rest-node-academind#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "mongoose": "^6.4.4",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
