@@ -5,15 +5,31 @@ const router = express.Router();
 const Product = require("../models/products");
 
 router.get("/", (req, res, next) => {
-  Product.find().exec().then(docs => {
-    console.log(docs);
-    res.status(200).json(docs);
-  }).catch(e => {
-    console.log(e);
-    res.status(500).json({
-        error: e
+  Product.find()
+    .select("name _id price")
+    .exec()
+    .then((docs) => {
+      res.status(200).json({
+        count: docs.length,
+        products: docs.map((doc) => {
+          return {
+            id: doc._id,
+            name: doc.name,
+            price: doc.price,
+            request: {
+              type: "GET",
+              url: `http://localhost:3000/products/${doc._id}`,
+            },
+          };
+        }),
+      });
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).json({
+        error: e,
+      });
     });
-  });
 });
 
 router.post("/", (req, res, next) => {
@@ -25,24 +41,32 @@ router.post("/", (req, res, next) => {
   product
     .save()
     .then((result) => {
-        console.log(result)
-        res.status(201).json({
-            message: "product created",
-            createdProduct: result,
-          });
+      console.log(result);
+      res.status(201).json({
+        message: "product created",
+        createdProduct: {
+          name: result.name,
+          price: result.price,
+          id: result._id,
+          request: {
+            type: "GET",
+            url: `http://localhost:3000/products/${result._id}`,
+          },
+        },
+      });
     })
     .catch((e) => {
-        console.log(e)
-        res.status(500).json({
-            error: e
-        })
+      console.log(e);
+      res.status(500).json({
+        error: e,
+      });
     });
-  
 });
 
 router.get("/:productId", (req, res, next) => {
   const id = req.params.productId;
   Product.findById(id)
+    .select("name price _id")
     .exec()
     .then((doc) => {
       console.log(doc);
@@ -50,10 +74,9 @@ router.get("/:productId", (req, res, next) => {
         res.status(200).json(doc);
       } else {
         res.status(404).json({
-            error: "Document not found"
-        })
+          error: "Document not found",
+        });
       }
-      
     })
     .catch((e) => {
       console.log(e);
@@ -61,31 +84,36 @@ router.get("/:productId", (req, res, next) => {
     });
 });
 
-router.delete("/:productId", (req,res,next) => {
-    const id = req.params.productId;
-    Product.remove({_id: id}).exec().then(result=>{
-        console.log(result);
-        res.status(200).json(result);
-    }).catch(e => {
-        console.log(e);
-        res.status(500).json({
-            error: e
-        });
+router.delete("/:productId", (req, res, next) => {
+  const id = req.params.productId;
+  Product.remove({ _id: id })
+    .exec()
+    .then((result) => {
+      console.log(result);
+      res.status(200).json(result);
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).json({
+        error: e,
+      });
     });
 });
 
-router.patch("/:productId", (req,res,next) => {
-    const id = req.params.productId;
-    Product.findByIdAndUpdate(id,{$set:req.body},{new: true}).exec().then(result=>{
-        console.log(result);
-        res.status(200).json(result);
-    }).catch(e=> {
-        console.log(e);
-        res.status(500).json({
-            error: e
-        });
+router.patch("/:productId", (req, res, next) => {
+  const id = req.params.productId;
+  Product.findByIdAndUpdate(id, { $set: req.body }, { new: true })
+    .exec()
+    .then((result) => {
+      console.log(result);
+      res.status(200).json(result);
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).json({
+        error: e,
+      });
     });
-
 });
 
 module.exports = router;
