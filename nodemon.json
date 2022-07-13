@@ -1,6 +1,7 @@
 {
     "env": 
     {
-        "ATLAS_PWD": "hesoyam151"
+        "ATLAS_PWD": "hesoyam151",
+        "JWT_SECRET": "can'ttouchthis"
     }
 }

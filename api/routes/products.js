@@ -2,6 +2,7 @@ const express = require("express");
 const { default: mongoose, now } = require("mongoose");
 const router = express.Router();
 const multer = require("multer");
+const checkAuth = require("../middleware/check-auth");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -44,7 +45,10 @@ router.get("/", (req, res, next) => {
             id: doc._id,
             name: doc.name,
             price: doc.price,
-            imageURL: `http://localhost:3000/${doc.productImage.replace('\\','/')}`,
+            imageURL: `http://localhost:3000/${doc.productImage.replace(
+              "\\",
+              "/"
+            )}`,
             request: {
               type: "GET",
               url: `http://localhost:3000/products/${doc._id}`,
@@ -61,13 +65,13 @@ router.get("/", (req, res, next) => {
     });
 });
 
-router.post("/", upload.single("productImage"), (req, res, next) => {
+router.post("/", checkAuth, upload.single("productImage"), (req, res, next) => {
   console.log(req.file);
   const product = new Product({
     _id: mongoose.Types.ObjectId(),
     name: req.body.name,
     price: req.body.price,
-    productImage: req.file.path
+    productImage: req.file.path,
   });
   product
     .save()
@@ -94,7 +98,7 @@ router.post("/", upload.single("productImage"), (req, res, next) => {
     });
 });
 
-router.get("/:productId", (req, res, next) => {
+router.get("/:productId", checkAuth,(req, res, next) => {
   const id = req.params.productId;
   Product.findById(id)
     .select("name price _id")
@@ -115,7 +119,7 @@ router.get("/:productId", (req, res, next) => {
     });
 });
 
-router.delete("/:productId", (req, res, next) => {
+router.delete("/:productId",checkAuth, (req, res, next) => {
   const id = req.params.productId;
   Product.deleteOne({ _id: id })
     .exec()
@@ -131,7 +135,7 @@ router.delete("/:productId", (req, res, next) => {
     });
 });
 
-router.patch("/:productId", (req, res, next) => {
+router.patch("/:productId", checkAuth,(req, res, next) => {
   const id = req.params.productId;
   Product.findByIdAndUpdate(id, { $set: req.body }, { new: true })
     .exec()

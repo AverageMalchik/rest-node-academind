@@ -1,11 +1,12 @@
 const express = require("express");
 const { default: mongoose } = require("mongoose");
 const router = express.Router();
+const checkAuth = require("../middleware/check-auth")
 
 const Order = require("../models/orders");
 const Products = require("../models/products");
 
-router.get("/", (req, res, next) => {
+router.get("/", checkAuth,(req, res, next) => {
   Order.find()
     .select("productId _id quantity")
     .populate("productId")
@@ -34,7 +35,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-router.post("/", (req, res, next) => {
+router.post("/", checkAuth, (req, res, next) => {
   Products.findById(req.body.productId)
     .then((product) => {
       if (!product) {
@@ -80,7 +81,7 @@ router.post("/", (req, res, next) => {
     });
 });
 
-router.get("/:orderId", (req, res, next) => {
+router.get("/:orderId", checkAuth, (req, res, next) => {
   const id = req.params.orderId;
   Order.findById(id)
     .select("product quantity _id")
@@ -101,7 +102,7 @@ router.get("/:orderId", (req, res, next) => {
     });
 });
 
-router.delete("/:orderId", (req, res, next) => {
+router.delete("/:orderId", checkAuth, (req, res, next) => {
   const id = req.params.orderId;
   Order.remove({ _id: id })
     .exec()
