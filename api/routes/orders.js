@@ -6,116 +6,14 @@ const checkAuth = require("../middleware/check-auth")
 const Order = require("../models/orders");
 const Products = require("../models/products");
 
-router.get("/", checkAuth,(req, res, next) => {
-  Order.find()
-    .select("productId _id quantity")
-    .populate("productId")
-    .exec()
-    .then((orders) => {
-      res.status(200).json({
-        count: orders.length,
-        orders: orders.map((order) => {
-          return {
-            id: order._id,
-            productId: order.productId,
-            quantity: order.quantity,
-            request: {
-              type: "GET",
-              url: `http://localhost:3000/orders/${order._id}`,
-            },
-          };
-        }),
-      });
-    })
-    .catch((e) => {
-      console.log(e);
-      res.status(500).json({
-        error: e,
-      });
-    });
-});
+const OrderController = require("../controllers/orders");
 
-router.post("/", checkAuth, (req, res, next) => {
-  Products.findById(req.body.productId)
-    .then((product) => {
-      if (!product) {
-        const error = new Error("Product not found");
-        error.status = 404;
-        error.message = "Product not found";
-        throw error;
-      }
-      const order = new Order({
-        _id: mongoose.Types.ObjectId(),
-        quantity: req.body.quantity,
-        productId: req.body.productId,
-      });
-      order
-        .save()
-        .then((result) => {
-          console.log(result);
-          res.status(201).json({
-            message: "order created",
-            createdOrder: {
-              productId: result.productId,
-              quantity: result.quantity,
-              id: result._id,
-              request: {
-                type: "GET",
-                url: `http://localhost:3000/orders/${result._id}`,
-              },
-            },
-          });
-        })
-        .catch((e) => {
-          console.log(e);
-          res.status(500).json({
-            error: e,
-          });
-        });
-    })
-    .catch((e) => {
-      console.log(e.message);
-      res.status(e.status || 500).json({
-        error: e.message,
-      });
-    });
-});
+router.get("/", checkAuth,OrderController.get_all_orders);
 
-router.get("/:orderId", checkAuth, (req, res, next) => {
-  const id = req.params.orderId;
-  Order.findById(id)
-    .select("product quantity _id")
-    .exec()
-    .then((order) => {
-      console.log(order);
-      if (order) {
-        res.status(200).json(order);
-      } else {
-        res.status(404).json({
-          error: "Order not found",
-        });
-      }
-    })
-    .catch((e) => {
-      console.log(e);
-      res.status(500).json({ error: e });
-    });
-});
+router.post("/", checkAuth, OrderController.create_order);
 
-router.delete("/:orderId", checkAuth, (req, res, next) => {
-  const id = req.params.orderId;
-  Order.remove({ _id: id })
-    .exec()
-    .then((result) => {
-      console.log(result);
-      res.status(200).json(result);
-    })
-    .catch((e) => {
-      console.log(e);
-      res.status(500).json({
-        error: e,
-      });
-    });
-});
+router.get("/:orderId", checkAuth, OrderController.get_single_order);
+
+router.delete("/:orderId", checkAuth, OrderController.delete_order);
 
 module.exports = router;
